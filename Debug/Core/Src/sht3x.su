@@ -1,0 +1,6 @@
+../Core/Src/sht3x.c:21:16:calculate_crc	32	static
+../Core/Src/sht3x.c:37:13:sht3x_send_command	32	static
+../Core/Src/sht3x.c:49:17:uint8_to_uint16	16	static
+../Core/Src/sht3x.c:54:6:sht3x_init	40	static
+../Core/Src/sht3x.c:74:6:sht3x_read_temperature_and_humidity	48	static
+../Core/Src/sht3x.c:100:6:sht3x_set_header_enable	16	static
