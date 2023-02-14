@@ -1,0 +1,5 @@
+../Core/Src/PASCO2.c:19:9:PASCO2_read	40	static
+../Core/Src/PASCO2.c:27:6:PASCO2_write	32	static
+../Core/Src/PASCO2.c:34:6:PASCO2_init	16	static
+../Core/Src/PASCO2.c:40:6:PASCO2_get_status	24	static
+../Core/Src/PASCO2.c:51:10:PASCO2_get_ppm	24	static

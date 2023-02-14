@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    stm32f401xe.h
+  * @file    stm32f411xe.h
   * @author  MCD Application Team
-  * @brief   CMSIS STM32F401xE Device Peripheral Access Layer Header File.
+  * @brief   CMSIS STM32F411xE Device Peripheral Access Layer Header File.
   *
   *          This file contains:
   *           - Data structures and the address mapping for all peripherals
@@ -26,12 +26,12 @@
   * @{
   */
 
-/** @addtogroup stm32f401xe
+/** @addtogroup stm32f411xe
   * @{
   */
     
-#ifndef __STM32F401xE_H
-#define __STM32F401xE_H
+#ifndef __STM32F411xE_H
+#define __STM32F411xE_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -129,7 +129,8 @@ typedef enum
   I2C3_EV_IRQn                = 72,     /*!< I2C3 event interrupt                                              */
   I2C3_ER_IRQn                = 73,     /*!< I2C3 error interrupt                                              */
   FPU_IRQn                    = 81,     /*!< FPU global interrupt                                              */
-  SPI4_IRQn                   = 84      /*!< SPI4 global Interrupt                                              */
+  SPI4_IRQn                   = 84,     /*!< SPI4 global Interrupt                                             */
+  SPI5_IRQn                   = 85      /*!< SPI5 global Interrupt                                              */
 } IRQn_Type;
 
 /**
@@ -633,9 +634,9 @@ typedef struct
   * @{
   */
 #define FLASH_BASE            0x08000000UL /*!< FLASH(up to 1 MB) base address in the alias region                         */
-#define SRAM1_BASE            0x20000000UL /*!< SRAM1(96 KB) base address in the alias region                              */
+#define SRAM1_BASE            0x20000000UL /*!< SRAM1(128 KB) base address in the alias region                             */
 #define PERIPH_BASE           0x40000000UL /*!< Peripheral base address in the alias region                                */
-#define SRAM1_BB_BASE         0x22000000UL /*!< SRAM1(96 KB) base address in the bit-band region                           */
+#define SRAM1_BB_BASE         0x22000000UL /*!< SRAM1(128 KB) base address in the bit-band region                          */
 #define PERIPH_BB_BASE        0x42000000UL /*!< Peripheral base address in the bit-band region                             */
 #define BKPSRAM_BB_BASE       0x42480000UL /*!< Backup SRAM(4 KB) base address in the bit-band region                      */
 #define FLASH_END             0x0807FFFFUL /*!< FLASH end address                                                          */
@@ -686,6 +687,7 @@ typedef struct
 #define TIM9_BASE             (APB2PERIPH_BASE + 0x4000UL)
 #define TIM10_BASE            (APB2PERIPH_BASE + 0x4400UL)
 #define TIM11_BASE            (APB2PERIPH_BASE + 0x4800UL)
+#define SPI5_BASE             (APB2PERIPH_BASE + 0x5000UL)
 
 /*!< AHB1 peripherals */
 #define GPIOA_BASE            (AHB1PERIPH_BASE + 0x0000UL)
@@ -776,6 +778,7 @@ typedef struct
 #define TIM9                ((TIM_TypeDef *) TIM9_BASE)
 #define TIM10               ((TIM_TypeDef *) TIM10_BASE)
 #define TIM11               ((TIM_TypeDef *) TIM11_BASE)
+#define SPI5                ((SPI_TypeDef *) SPI5_BASE)
 #define GPIOA               ((GPIO_TypeDef *) GPIOA_BASE)
 #define GPIOB               ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC               ((GPIO_TypeDef *) GPIOC_BASE)
@@ -3832,6 +3835,12 @@ typedef struct
 #define PWR_CR_VOS             PWR_CR_VOS_Msk                                  /*!< VOS[1:0] bits (Regulator voltage scaling output selection) */
 #define PWR_CR_VOS_0           0x00004000U                                     /*!< Bit 0 */
 #define PWR_CR_VOS_1           0x00008000U                                     /*!< Bit 1 */
+#define PWR_CR_FMSSR_Pos       (20U)                                           
+#define PWR_CR_FMSSR_Msk       (0x1UL << PWR_CR_FMSSR_Pos)                      /*!< 0x00100000 */
+#define PWR_CR_FMSSR           PWR_CR_FMSSR_Msk                                /*!< Flash Memory Sleep System Run        */
+#define PWR_CR_FISSR_Pos       (21U)                                           
+#define PWR_CR_FISSR_Msk       (0x1UL << PWR_CR_FISSR_Pos)                      /*!< 0x00200000 */
+#define PWR_CR_FISSR           PWR_CR_FISSR_Msk                                /*!< Flash Interface Stop while System Run */
 
 /* Legacy define */
 #define  PWR_CR_PMODE                        PWR_CR_VOS
@@ -4257,6 +4266,9 @@ typedef struct
 #define RCC_APB2RSTR_TIM11RST_Pos          (18U)                               
 #define RCC_APB2RSTR_TIM11RST_Msk          (0x1UL << RCC_APB2RSTR_TIM11RST_Pos) /*!< 0x00040000 */
 #define RCC_APB2RSTR_TIM11RST              RCC_APB2RSTR_TIM11RST_Msk           
+#define RCC_APB2RSTR_SPI5RST_Pos           (20U)                               
+#define RCC_APB2RSTR_SPI5RST_Msk           (0x1UL << RCC_APB2RSTR_SPI5RST_Pos)  /*!< 0x00100000 */
+#define RCC_APB2RSTR_SPI5RST               RCC_APB2RSTR_SPI5RST_Msk            
 
 /* Old SPI1RST bit definition, maintained for legacy purpose */
 #define  RCC_APB2RSTR_SPI1                   RCC_APB2RSTR_SPI1RST
@@ -4371,6 +4383,9 @@ typedef struct
 #define RCC_APB2ENR_TIM11EN_Pos            (18U)                               
 #define RCC_APB2ENR_TIM11EN_Msk            (0x1UL << RCC_APB2ENR_TIM11EN_Pos)   /*!< 0x00040000 */
 #define RCC_APB2ENR_TIM11EN                RCC_APB2ENR_TIM11EN_Msk             
+#define RCC_APB2ENR_SPI5EN_Pos             (20U)                               
+#define RCC_APB2ENR_SPI5EN_Msk             (0x1UL << RCC_APB2ENR_SPI5EN_Pos)    /*!< 0x00100000 */
+#define RCC_APB2ENR_SPI5EN                 RCC_APB2ENR_SPI5EN_Msk              
 
 /********************  Bit definition for RCC_AHB1LPENR register  *************/
 #define RCC_AHB1LPENR_GPIOALPEN_Pos        (0U)                                
@@ -4487,6 +4502,9 @@ typedef struct
 #define RCC_APB2LPENR_TIM11LPEN_Pos        (18U)                               
 #define RCC_APB2LPENR_TIM11LPEN_Msk        (0x1UL << RCC_APB2LPENR_TIM11LPEN_Pos) /*!< 0x00040000 */
 #define RCC_APB2LPENR_TIM11LPEN            RCC_APB2LPENR_TIM11LPEN_Msk         
+#define RCC_APB2LPENR_SPI5LPEN_Pos         (20U)                               
+#define RCC_APB2LPENR_SPI5LPEN_Msk         (0x1UL << RCC_APB2LPENR_SPI5LPEN_Pos) /*!< 0x00100000 */
+#define RCC_APB2LPENR_SPI5LPEN             RCC_APB2LPENR_SPI5LPEN_Msk          
 
 /********************  Bit definition for RCC_BDCR register  ******************/
 #define RCC_BDCR_LSEON_Pos                 (0U)                                
@@ -4498,6 +4516,9 @@ typedef struct
 #define RCC_BDCR_LSEBYP_Pos                (2U)                                
 #define RCC_BDCR_LSEBYP_Msk                (0x1UL << RCC_BDCR_LSEBYP_Pos)       /*!< 0x00000004 */
 #define RCC_BDCR_LSEBYP                    RCC_BDCR_LSEBYP_Msk                 
+#define RCC_BDCR_LSEMOD_Pos                (3U)                                
+#define RCC_BDCR_LSEMOD_Msk                (0x1UL << RCC_BDCR_LSEMOD_Pos)       /*!< 0x00000008 */
+#define RCC_BDCR_LSEMOD                    RCC_BDCR_LSEMOD_Msk                 
 
 #define RCC_BDCR_RTCSEL_Pos                (8U)                                
 #define RCC_BDCR_RTCSEL_Msk                (0x3UL << RCC_BDCR_RTCSEL_Pos)       /*!< 0x00000300 */
@@ -4562,6 +4583,16 @@ typedef struct
 #define RCC_SSCGR_SSCGEN                   RCC_SSCGR_SSCGEN_Msk                
 
 /********************  Bit definition for RCC_PLLI2SCFGR register  ************/
+#define RCC_PLLI2SCFGR_PLLI2SM_Pos         (0U)                                
+#define RCC_PLLI2SCFGR_PLLI2SM_Msk         (0x3FUL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x0000003F */
+#define RCC_PLLI2SCFGR_PLLI2SM             RCC_PLLI2SCFGR_PLLI2SM_Msk          
+#define RCC_PLLI2SCFGR_PLLI2SM_0           (0x01UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000001 */
+#define RCC_PLLI2SCFGR_PLLI2SM_1           (0x02UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000002 */
+#define RCC_PLLI2SCFGR_PLLI2SM_2           (0x04UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000004 */
+#define RCC_PLLI2SCFGR_PLLI2SM_3           (0x08UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000008 */
+#define RCC_PLLI2SCFGR_PLLI2SM_4           (0x10UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000010 */
+#define RCC_PLLI2SCFGR_PLLI2SM_5           (0x20UL << RCC_PLLI2SCFGR_PLLI2SM_Pos) /*!< 0x00000020 */
+
 #define RCC_PLLI2SCFGR_PLLI2SN_Pos         (6U)                                
 #define RCC_PLLI2SCFGR_PLLI2SN_Msk         (0x1FFUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) /*!< 0x00007FC0 */
 #define RCC_PLLI2SCFGR_PLLI2SN             RCC_PLLI2SCFGR_PLLI2SN_Msk          
@@ -8287,8 +8318,11 @@ typedef struct
 
 /******************************** I2S Instances *******************************/
 
-#define IS_I2S_ALL_INSTANCE(INSTANCE)  (((INSTANCE) == SPI2) || \
-                                       ((INSTANCE) == SPI3))
+#define IS_I2S_ALL_INSTANCE(INSTANCE)  (((INSTANCE) == SPI1) || \
+                                        ((INSTANCE) == SPI2) || \
+                                        ((INSTANCE) == SPI3) || \
+                                        ((INSTANCE) == SPI4) || \
+                                        ((INSTANCE) == SPI5))
 
 /*************************** I2S Extended Instances ***************************/
 #define IS_I2S_EXT_ALL_INSTANCE(INSTANCE) (((INSTANCE) == I2S2ext)|| \
@@ -8302,10 +8336,12 @@ typedef struct
 
 
 /******************************** SPI Instances *******************************/
+
 #define IS_SPI_ALL_INSTANCE(INSTANCE) (((INSTANCE) == SPI1) || \
                                        ((INSTANCE) == SPI2) || \
                                        ((INSTANCE) == SPI3) || \
-                                       ((INSTANCE) == SPI4))
+                                       ((INSTANCE) == SPI4) || \
+                                       ((INSTANCE) == SPI5))
 
 
 /****************** TIM Instances : All supported instances *******************/
@@ -8317,7 +8353,6 @@ typedef struct
                                    ((INSTANCE) == TIM9)   || \
                                    ((INSTANCE) == TIM10)  || \
                                    ((INSTANCE) == TIM11))
-
 
 /************* TIM Instances : at least 1 capture/compare channel *************/
 #define IS_TIM_CC1_INSTANCE(INSTANCE)   (((INSTANCE) == TIM1)  || \
@@ -8485,7 +8520,6 @@ typedef struct
                                                   ((INSTANCE) == TIM10)  || \
                                                   ((INSTANCE) == TIM11))
 
-
 /****************** TIM Instances : supporting commutation event generation ***/
 
 #define IS_TIM_COMMUTATION_EVENT_INSTANCE(INSTANCE) ((INSTANCE) == TIM1)
@@ -8602,24 +8636,29 @@ typedef struct
  * @brief Specific devices reset values definitions
  */
 #define RCC_PLLCFGR_RST_VALUE              0x24003010U
-#define RCC_PLLI2SCFGR_RST_VALUE           0x20003000U
+#define RCC_PLLI2SCFGR_RST_VALUE           0x20003010U
 
-#define RCC_MAX_FREQUENCY            84000000U         /*!< Max frequency of family in Hz*/
-#define RCC_MAX_FREQUENCY_SCALE3     60000000U         /*!< Maximum frequency for system clock at power scale3, in Hz */
-#define RCC_MAX_FREQUENCY_SCALE2    RCC_MAX_FREQUENCY  /*!< Maximum frequency for system clock at power scale2, in Hz */
-#define RCC_PLLVCO_OUTPUT_MIN       192000000U       /*!< Frequency min for PLLVCO output, in Hz */
+#define RCC_MAX_FREQUENCY           100000000U         /*!< Max frequency of family in Hz*/
+#define RCC_MAX_FREQUENCY_SCALE1    RCC_MAX_FREQUENCY  /*!< Maximum frequency for system clock at power scale1, in Hz */
+#define RCC_MAX_FREQUENCY_SCALE2     84000000U         /*!< Maximum frequency for system clock at power scale2, in Hz */
+#define RCC_MAX_FREQUENCY_SCALE3     64000000U         /*!< Maximum frequency for system clock at power scale3, in Hz */
+#define RCC_PLLVCO_OUTPUT_MIN       100000000U       /*!< Frequency min for PLLVCO output, in Hz */
 #define RCC_PLLVCO_INPUT_MIN           950000U       /*!< Frequency min for PLLVCO input, in Hz  */
 #define RCC_PLLVCO_INPUT_MAX          2100000U       /*!< Frequency max for PLLVCO input, in Hz  */
 #define RCC_PLLVCO_OUTPUT_MAX       432000000U       /*!< Frequency max for PLLVCO output, in Hz */
 
-#define RCC_PLLN_MIN_VALUE                192U
+#define RCC_PLLN_MIN_VALUE                 50U
 #define RCC_PLLN_MAX_VALUE                432U
 
-#define FLASH_SCALE2_LATENCY1_FREQ    30000000U      /*!< HCLK frequency to set FLASH latency 1 in power scale 2  */
-#define FLASH_SCALE2_LATENCY2_FREQ    60000000U      /*!< HCLK frequency to set FLASH latency 2 in power scale 2  */
+#define FLASH_SCALE1_LATENCY1_FREQ   30000000U      /*!< HCLK frequency to set FLASH latency 1 in power scale 1  */
+#define FLASH_SCALE1_LATENCY2_FREQ   64000000U      /*!< HCLK frequency to set FLASH latency 2 in power scale 1  */
+#define FLASH_SCALE1_LATENCY3_FREQ   90000000U      /*!< HCLK frequency to set FLASH latency 3 in power scale 1  */
 
-#define FLASH_SCALE3_LATENCY1_FREQ    30000000U      /*!< HCLK frequency to set FLASH latency 1 in power scale 3  */
-#define FLASH_SCALE3_LATENCY2_FREQ    60000000U      /*!< HCLK frequency to set FLASH latency 2 in power scale 3  */
+#define FLASH_SCALE2_LATENCY1_FREQ   30000000U      /*!< HCLK frequency to set FLASH latency 1 in power scale 2  */
+#define FLASH_SCALE2_LATENCY2_FREQ   64000000U      /*!< HCLK frequency to set FLASH latency 2 in power scale 2  */
+
+#define FLASH_SCALE3_LATENCY1_FREQ   30000000U      /*!< HCLK frequency to set FLASH latency 1 in power scale 3  */
+#define FLASH_SCALE3_LATENCY2_FREQ   64000000U      /*!< HCLK frequency to set FLASH latency 2 in power scale 3  */
 
 
 /**
@@ -8638,4 +8677,4 @@ typedef struct
 }
 #endif /* __cplusplus */
 
-#endif /* __STM32F401xE_H */
+#endif /* __STM32F411xE_H */

@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := Gensensor1
+BUILD_ARTIFACT_NAME := GenSense_TEST
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-Gensensor1.elf \
+GenSense_TEST.elf \
 
 MAP_FILES += \
-Gensensor1.map \
+GenSense_TEST.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-Gensensor1.list \
+GenSense_TEST.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: Gensensor1.elf secondary-outputs
+main-build: GenSense_TEST.elf secondary-outputs
 
 # Tool invocations
-Gensensor1.elf Gensensor1.map: $(OBJS) $(USER_OBJS) C:\Users\Yousif\STM32CubeIDE\workspace_1.10.1\Gensensor1\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Gensensor1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Yousif\STM32CubeIDE\workspace_1.10.1\Gensensor1\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Gensensor1.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+GenSense_TEST.elf GenSense_TEST.map: $(OBJS) $(USER_OBJS) C:\Users\Yousif\STM32CubeIDE\workspace_1.10.1\GenSense_TEST\STM32F411CEUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "GenSense_TEST.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Yousif\STM32CubeIDE\workspace_1.10.1\GenSense_TEST\STM32F411CEUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="GenSense_TEST.map" -Wl,--gc-sections -static -u printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-Gensensor1.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "Gensensor1.list"
+GenSense_TEST.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "GenSense_TEST.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) Gensensor1.elf Gensensor1.list Gensensor1.map default.size.stdout
+	-$(RM) GenSense_TEST.elf GenSense_TEST.list GenSense_TEST.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

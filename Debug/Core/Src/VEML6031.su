@@ -1,0 +1,4 @@
+../Core/Src/VEML6031.c:14:9:VEML6031_read	40	static
+../Core/Src/VEML6031.c:22:6:VEML6031_write	32	static
+../Core/Src/VEML6031.c:29:7:VEML6031_optimizer	32	static
+../Core/Src/VEML6031.c:75:10:VEML6031_read_light	24	static
