@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "PCA9548a.h"
+#include "mlx90614.h"
 #include "sht3x.h"
 #include "PASCO2.h"
 #include "VEML6031.h"
@@ -42,6 +44,7 @@
 #define PASCO2_COUNTER 20
 #define VEML6031_COUNTER 20
 #define AS7343_COUNTER 20
+#define MLX90614_COUNTER 10
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -70,6 +73,7 @@ static void MX_ADC1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
+pca9548a_handle_t pca9548a;
 sht3x_handle_t sht31d;
 pasco2_handle_t pasco2;
 veml6031_handle_t veml6031;
@@ -86,6 +90,9 @@ bool VEML6031_counter_timeout_flag = false;
 
 uint16_t AS7343_counter = AS7343_COUNTER;
 bool AS7343_counter_timeout_flag = false;
+
+uint16_t MLX90614_counter = MLX90614_COUNTER;
+bool MLX90614_counter_timeout_flag = false;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -164,9 +171,14 @@ int main(void)
   MX_ADC1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  huart2 = huart1;
 
-  scan_I2C_bus(&hi2c1, 1);
-  scan_I2C_bus(&hi2c3, 3);
+  //I2C Mux handler
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);
+  HAL_Delay(100);
+  pca9548a.i2c_handle = &hi2c1;
+  pca9548a.device_address = (uint16_t)PCA9548_ADDR0;
+  PCA9548a_Select(&pca9548a, 0);
 
   //SHT handler
   sht31d.i2c_handle = &hi2c3;
@@ -189,6 +201,9 @@ int main(void)
   AS7343_set_cycle(&as7343, 3);
   AS7343_direct_config_3_chain(&as7343);
 
+  //MLX90614 handler
+  MLX90614_Init(&hi2c1);
+
 //  if(!PASCO2_get_status(&pasco2)) {
 //	  char* error = "Error in PASCO2 configuration.\r\n";
 //	  HAL_UART_Transmit(&huart1, error, takeSize(error), 100);
@@ -200,6 +215,8 @@ int main(void)
   float sht31_temp, sht31_humidity, resolution, as7343_TINT;
   uint16_t co2_ppm;
   uint32_t lux;
+  uint8_t IR;
+  float temp_obj1, temp_amb;
 
   uint16_t as7343_channels[18];
 
@@ -207,17 +224,41 @@ int main(void)
   char uart_buf[100];
   HAL_Delay(100);
 
+  scan_I2C_bus(&hi2c1, 1);
+  scan_I2C_bus(&hi2c3, 3);
+
   HAL_TIM_Base_Start_IT(&htim3);
+
+//  for(int i = 0; i<8;i++) {
+//  	  PCA9548a_Select(&pca9548a, i);
+//    	  HAL_Delay(500);
+//    	  HAL_I2C_Master_Receive(&hi2c1, (0x70 << 1), &IR, 1, 10);
+//    	  uart_buf_len = sprintf(uart_buf, "Channel: %d\r\n\n", IR);
+//    	  HAL_UART_Transmit(&huart1, (uint8_t *)uart_buf, uart_buf_len, 100);
+//    	  memset(uart_buf, 0, sizeof(uart_buf));
+//    	  HAL_Delay(500);
+//    	  scan_I2C_bus(&hi2c1, 1);
+//    	  HAL_Delay(500);
+//    }
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int i = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//	  scan_I2C_bus(&hi2c1, 1);
+//	  HAL_Delay(500);
+//	  HAL_I2C_Master_Receive(&hi2c1, (0x70 << 1), &IR, 1, 10);
+//	  uart_buf_len = sprintf(uart_buf, "Channel: %d\r\n\n", IR);
+//	  HAL_UART_Transmit(&huart1, (uint8_t *)uart_buf, uart_buf_len, 100);
+//	  memset(uart_buf, 0, sizeof(uart_buf));
+
+//	  PCA9548a_Select(&pca9548a, 1);
 
 	  if(SHT31_counter_timeout_flag) {
 	  	//trigger SHT35 read
@@ -239,7 +280,7 @@ int main(void)
 		co2_ppm = PASCO2_get_ppm(&pasco2);
 
 		uart_buf_len = sprintf(uart_buf, "CO2 Concentration (ppm): %d\r\n\n", co2_ppm);
-		HAL_UART_Transmit(&huart1, (uint8_t *)uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 	  }
 	  else if(VEML6031_counter_timeout_flag) {
@@ -251,7 +292,7 @@ int main(void)
 		lux = VEML6031_read_light(&veml6031)*resolution;
 
 		uart_buf_len = sprintf(uart_buf, "Light Intensity (lux): %d\r\n\n", lux);
-		HAL_UART_Transmit(&huart1, (uint8_t *)uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, (uint8_t *)uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 	  }
 	  else if(AS7343_counter_timeout_flag) {
@@ -264,67 +305,80 @@ int main(void)
 		AS7343_read_18(&as7343, as7343_channels);
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F1: 0x%x - 0d%d\r\n", as7343_channels[12], as7343_channels[12]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F2: 0x%x - 0d%d\r\n", as7343_channels[6], as7343_channels[6]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 FZ: 0x%x - 0d%d\r\n", as7343_channels[0], as7343_channels[0]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F3: 0x%x - 0d%d\r\n", as7343_channels[7], as7343_channels[7]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F4: 0x%x - 0d%d\r\n", as7343_channels[8], as7343_channels[8]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 FY: 0x%x - 0d%d\r\n", as7343_channels[1], as7343_channels[1]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F5: 0x%x - 0d%d\r\n", as7343_channels[15], as7343_channels[15]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 FXL: 0x%x - 0d%d\r\n", as7343_channels[2], as7343_channels[2]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F6: 0x%x - 0d%d\r\n", as7343_channels[9], as7343_channels[9]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F7: 0x%x - 0d%d\r\n", as7343_channels[13], as7343_channels[13]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 F8: 0x%x - 0d%d\r\n", as7343_channels[14], as7343_channels[14]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uart_buf_len = sprintf(uart_buf, "AS7343 NIR: 0x%x - 0d%d\r\n", as7343_channels[3], as7343_channels[3]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uint16_t VIS = (as7343_channels[4]<<1)+(as7343_channels[10]<<1);
 		uart_buf_len = sprintf(uart_buf, "AS7343 VIS: 0x%x - 0d%d\r\n", as7343_channels[4], as7343_channels[4]);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		uint8_t as7343_AGAIN = AS7343_get_gain(&as7343);
 		uart_buf_len = sprintf(uart_buf, "AS7343 GAIN: %d\r\n", as7343_AGAIN);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
 
 		as7343_TINT = AS7343_get_TINT(&as7343);
 		uart_buf_len = sprintf(uart_buf, "AS7343 TINT: %f\r\n\n\n", as7343_TINT);
-		HAL_UART_Transmit(&huart1, uart_buf, uart_buf_len, 100);
+		HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
 		memset(uart_buf, 0, sizeof(uart_buf));
+	  }
+	  if(MLX90614_counter_timeout_flag) {
+	  		  //trigger MLX90614 read
+
+	    MLX90614_counter_timeout_flag = 0;
+
+	  	temp_obj1 = MLX90614_ReadTObj1();
+	  	HAL_Delay(5);
+	  	temp_amb = MLX90614_ReadTAmb();
+
+	  	uart_buf_len = sprintf(uart_buf, "IR Sensor: T obj1: %.2f, T amb: %.2f\r\n", temp_obj1, temp_amb);
+	  	HAL_UART_Transmit(&huart2, uart_buf, uart_buf_len, 100);
+	  	memset(uart_buf, 0, sizeof(uart_buf));
 	  }
   }
   /* USER CODE END 3 */
@@ -585,7 +639,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -666,16 +720,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
 		VEML6031_counter_timeout_flag = true;
 		VEML6031_counter = VEML6031_COUNTER;
 	}
-	if(--AS7343_counter == 0) {
-		//AS7343 Handler
-		AS7343_counter_timeout_flag = true;
-		AS7343_counter = AS7343_COUNTER;
-	}
-//	if(--MLX90614_counter == 0) {
-//		//MLX90614 Handler
-//		MLX90614_counter_timeout_flag = true;
-//		MLX90614_counter = MLX90614_COUNTER;
+//	if(--AS7343_counter == 0) {
+//		//AS7343 Handler
+//		AS7343_counter_timeout_flag = true;
+//		AS7343_counter = AS7343_COUNTER;
 //	}
+	if(--MLX90614_counter == 0) {
+		//MLX90614 Handler
+		MLX90614_counter_timeout_flag = true;
+		MLX90614_counter = MLX90614_COUNTER;
+	}
 
 }
 /* USER CODE END 4 */

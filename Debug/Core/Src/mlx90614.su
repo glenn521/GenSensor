@@ -1,0 +1,8 @@
+../Core/Src/mlx90614.c:20:9:crc8	24	static
+../Core/Src/mlx90614.c:38:6:MLX90614_Init	24	static
+../Core/Src/mlx90614.c:104:6:MLX90614_WriteReg	32	static
+../Core/Src/mlx90614.c:143:6:MLX90614_ReadReg	40	static
+../Core/Src/mlx90614.c:168:7:MLX90614_ReadTObj1	16	static
+../Core/Src/mlx90614.c:180:7:MLX90614_ReadTObj2	16	static
+../Core/Src/mlx90614.c:192:7:MLX90614_ReadTAmb	16	static
+../Core/Src/mlx90614.c:201:7:MLX90614_CalcTemp	24	static

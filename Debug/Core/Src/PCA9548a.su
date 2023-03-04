@@ -1,0 +1,2 @@
+../Core/Src/PCA9548a.c:13:6:PCA9548a_Select	32	static
+../Core/Src/PCA9548a.c:20:6:PCA9548a_Disable	32	static
